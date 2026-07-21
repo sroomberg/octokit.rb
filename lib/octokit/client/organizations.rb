@@ -621,13 +621,13 @@ module Octokit
       end
       alias team_repo? team_repository?
 
-      # Add team repository
+      # Add or update team repository permissions
       #
-      # This can also be used to update the permission of an existing team
-      #
-      # Requires authenticated user to be an owner of the organization that the
-      # team is associated with. Also, the repo must be owned by the
-      # organization, or a direct fork of a repo owned by the organization.
+      # To add a repository to a team or update the team's permission on a
+      # repository. The authenticated user must have admin access to the
+      # repository and must be able to see the team. The repository must be owned
+      # by the organization, or a direct fork of a repository owned by the
+      # organization.
       #
       # @overload add_team_repository(team_id, repo, options = {})
       #   @param team_id [Integer] Team id.
@@ -635,11 +635,11 @@ module Octokit
       #   @param org [String, Integer] Organization GitHub login or id.
       #   @param team [String, Integer] Team slug or id.
       # @param repo [String, Hash, Repository] A GitHub repository.
-      # @option options [String] :permission The permission to grant the team.
-      #   Only valid on organization-owned repositories.
-      #   Can be one of: <tt>pull</tt>, <tt>push</tt>, or <tt>admin</tt>.
-      #   If not specified, the team's <tt>permission</tt> attribute will be
-      #   used to determine what permission to grant the team on this repository.
+      # @option options [String] :permission The permission to grant the team on
+      #   this repository. Accepted values are <tt>pull</tt>, <tt>triage</tt>,
+      #   <tt>push</tt>, <tt>maintain</tt>, <tt>admin</tt>, or a custom
+      #   repository role name defined by the organization. If not specified, the
+      #   team's <tt>permission</tt> attribute will be used.
       # @return [Boolean] True if successful, false otherwise.
       # @see Octokit::Repository
       # @see https://docs.github.com/en/rest/teams/teams#add-or-update-team-repository-permissions
@@ -647,8 +647,10 @@ module Octokit
       #   @client.add_team_repository(100000, 'github/developer.github.com')
       # @example
       #   @client.add_team_repo("github", "justice-league", "github/developer.github.com")
+      # @example Add a team with write (push) permissions
+      #   @client.add_team_repository("github", "justice-league", "github/developer.github.com", permission: "push")
       # @example Add a team with admin permissions
-      #   @client.add_team_repository(100000, 'github/developer.github.com', permission: 'admin')
+      #   @client.add_team_repository("github", "justice-league", "github/developer.github.com", permission: "admin")
       def add_team_repository(*args)
         path, repo, options = team_path_repo_and_options(args)
         boolean_from_response :put, "#{path}/repos/#{Repository.new(repo)}", options
