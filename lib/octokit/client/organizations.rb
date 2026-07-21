@@ -328,35 +328,23 @@ module Octokit
       #
       # Requires authenticated organization member.
       #
-      # @param team_id [Integer] Team id.
-      # @return [Sawyer::Resource] Hash representing team.
-      # @see https://developer.github.com/v3/orgs/teams/#get-team
-      # @example
-      #   @client.team(100000)
-      def team(team_id, options = {})
-        get "teams/#{team_id}", options
-      end
-
-      # Get team by name and org
-      #
-      # Requires authenticated organization member.
-      #
       # @param org [String, Integer] Organization GitHub login or id.
       # @param team_slug [String] Team slug.
       # @return [Sawyer::Resource] Hash representing team.
-      # @see https://developer.github.com/v3/teams/#get-team-by-name
+      # @see https://docs.github.com/en/rest/teams/teams#get-a-team-by-name
       # @example
-      #   @client.team_by_name("github", "justice-league")
-      def team_by_name(org, team_slug, options = {})
-        get "#{Organization.path(org)}/teams/#{team_slug}", options
+      #   @client.team("github", "justice-league")
+      def team(org, team_slug, options = {})
+        get Team.path(org, team_slug), options
       end
+      alias team_by_name team
 
       # Check team permissions for a repository
       #
       # Requires authenticated organization member.
       #
       # @param org [String, Integer] Organization GitHub login or id.
-      # @param team_slug_or_id [String, Integer] Team slug or Team ID.
+      # @param team_slug [String] Team slug.
       # @param owner [String] Owner name for the repository.
       # @param repo [String] Name of the repo to check permissions against.
       # @return [String, Sawyer::Resource] Depending on options it may be an empty string or a resource.
@@ -368,28 +356,30 @@ module Octokit
       #   # Get the full repository object including the permissions level and role for the team
       #   @client.team_permissions_for_repo("github", "justice-league", "octocat", "hello-world", :accept => 'application/vnd.github.v3.repository+json')
       # @see https://docs.github.com/en/rest/teams/teams#check-team-permissions-for-a-repository
-      def team_permissions_for_repo(org, team_slug_or_id, owner, repo, options = {})
-        get "#{Organization.path(org)}/teams/#{team_slug_or_id}/repos/#{owner}/#{repo}", options
+      def team_permissions_for_repo(org, team_slug, owner, repo, options = {})
+        get "#{Team.path(org, team_slug)}/repos/#{owner}/#{repo}", options
       end
 
       # List child teams
       #
       # Requires authenticated organization member.
       #
-      # @param team_id [Integer] Team id.
+      # @param org [String, Integer] Organization GitHub login or id.
+      # @param team_slug [String] Team slug.
       # @return [Sawyer::Resource] Hash representing team.
-      # @see https://developer.github.com/v3/orgs/teams/#list-child-teams
+      # @see https://docs.github.com/en/rest/teams/teams#list-child-teams
       # @example
-      #   @client.child_teams(100000, :accept => "application/vnd.github.hellcat-preview+json")
-      def child_teams(team_id, options = {})
-        paginate "teams/#{team_id}/teams", options
+      #   @client.child_teams("github", "justice-league")
+      def child_teams(org, team_slug, options = {})
+        paginate "#{Team.path(org, team_slug)}/teams", options
       end
 
       # Update team
       #
       # Requires authenticated organization owner.
       #
-      # @param team_id [Integer] Team id.
+      # @param org [String, Integer] Organization GitHub login or id.
+      # @param team_slug [String] Team slug.
       # @option options [String] :name Team name.
       # @option options [String] :permission Permissions the team has for team repositories.
       #
@@ -398,40 +388,42 @@ module Octokit
       #   `admin` - team members can pull, push and administer these repositories.
       # @option options [Integer] :parent_team_id ID of a team to set as the parent team.
       # @return [Sawyer::Resource] Hash representing updated team.
-      # @see https://developer.github.com/v3/orgs/teams/#edit-team
+      # @see https://docs.github.com/en/rest/teams/teams#update-a-team
       # @example
-      #   @client.update_team(100000, {
+      #   @client.update_team("github", "justice-league", {
       #     :name => 'Front-end Designers',
       #     :permission => 'push'
       #   })
-      def update_team(team_id, options = {})
-        patch "teams/#{team_id}", options
+      def update_team(org, team_slug, options = {})
+        patch Team.path(org, team_slug), options
       end
 
       # Delete team
       #
       # Requires authenticated organization owner.
       #
-      # @param team_id [Integer] Team id.
+      # @param org [String, Integer] Organization GitHub login or id.
+      # @param team_slug [String] Team slug.
       # @return [Boolean] True if deletion successful, false otherwise.
-      # @see https://developer.github.com/v3/orgs/teams/#delete-team
+      # @see https://docs.github.com/en/rest/teams/teams#delete-a-team
       # @example
-      #   @client.delete_team(100000)
-      def delete_team(team_id, options = {})
-        boolean_from_response :delete, "teams/#{team_id}", options
+      #   @client.delete_team("github", "justice-league")
+      def delete_team(org, team_slug, options = {})
+        boolean_from_response :delete, Team.path(org, team_slug), options
       end
 
       # List team members
       #
       # Requires authenticated organization member.
       #
-      # @param team_id [Integer] Team id.
+      # @param org [String, Integer] Organization GitHub login or id.
+      # @param team_slug [String] Team slug.
       # @return [Array<Sawyer::Resource>] Array of hashes representing users.
-      # @see https://developer.github.com/v3/orgs/teams/#list-team-members
+      # @see https://docs.github.com/en/rest/teams/members#list-team-members
       # @example
-      #   @client.team_members(100000)
-      def team_members(team_id, options = {})
-        paginate "teams/#{team_id}/members", options
+      #   @client.team_members("github", "justice-league")
+      def team_members(org, team_slug, options = {})
+        paginate "#{Team.path(org, team_slug)}/members", options
       end
 
       # Add team member
@@ -439,27 +431,29 @@ module Octokit
       # Requires authenticated organization owner or member with team
       # `admin` permission.
       #
-      # @param team_id [Integer] Team id.
+      # @param org [String, Integer] Organization GitHub login or id.
+      # @param team_slug [String] Team slug.
       # @param user [String] GitHub username of new team member.
       # @return [Boolean] True on successful addition, false otherwise.
-      # @see https://developer.github.com/v3/orgs/teams/#add-team-member
+      # @see https://docs.github.com/en/rest/teams/members#add-or-update-team-membership-for-a-user
       # @example
-      #   @client.add_team_member(100000, 'pengwynn')
+      #   @client.add_team_member("github", "justice-league", "pengwynn")
       #
       # @example
       #   # Opt-in to future behavior for this endpoint. Adds the member to the
       #   # team if they're already an org member. If not, the method will return
       #   # 422 and indicate the user should call the new Team Membership endpoint.
       #   @client.add_team_member \
-      #     100000,
-      #     'pengwynn',
+      #     "github",
+      #     "justice-league",
+      #     "pengwynn",
       #     :accept => "application/vnd.github.the-wasp-preview+json"
       # @see https://developer.github.com/changes/2014-08-05-team-memberships-api/
-      def add_team_member(team_id, user, options = {})
+      def add_team_member(org, team_slug, user, options = {})
         # There's a bug in this API call. The docs say to leave the body blank,
         # but it fails if the body is both blank and the content-length header
         # is not 0.
-        boolean_from_response :put, "teams/#{team_id}/members/#{user}", options.merge({ name: user })
+        boolean_from_response :put, "#{Team.path(org, team_slug)}/members/#{user}", options.merge({ name: user })
       end
 
       # Remove team member
@@ -467,14 +461,15 @@ module Octokit
       # Requires authenticated organization owner or member with team
       # `admin` permission.
       #
-      # @param team_id [Integer] Team id.
+      # @param org [String, Integer] Organization GitHub login or id.
+      # @param team_slug [String] Team slug.
       # @param user [String] GitHub username of the user to boot.
       # @return [Boolean] True if user removed, false otherwise.
-      # @see https://developer.github.com/v3/orgs/teams/#remove-team-member
+      # @see https://docs.github.com/en/rest/teams/members#remove-team-membership-for-a-user
       # @example
-      #   @client.remove_team_member(100000, 'pengwynn')
-      def remove_team_member(team_id, user, options = {})
-        boolean_from_response :delete, "teams/#{team_id}/members/#{user}", options
+      #   @client.remove_team_member("github", "justice-league", "pengwynn")
+      def remove_team_member(org, team_slug, user, options = {})
+        boolean_from_response :delete, "#{Team.path(org, team_slug)}/members/#{user}", options
       end
 
       # Check if a user is a member of a team.
@@ -482,64 +477,68 @@ module Octokit
       # Use this to check if another user is a member of a team that
       # you are a member.
       #
-      # @param team_id [Integer] Team id.
+      # @param org [String, Integer] Organization GitHub login or id.
+      # @param team_slug [String] Team slug.
       # @param user [String] GitHub username of the user to check.
       #
       # @return [Boolean] Is a member?
       #
-      # @see https://developer.github.com/v3/orgs/teams/#get-team-member
+      # @see https://docs.github.com/en/rest/teams/members#get-team-membership-for-a-user
       #
       # @example Check if a user is in your team
-      #   @client.team_member?(100000, 'pengwynn')
+      #   @client.team_member?("github", "justice-league", "pengwynn")
       #   => false
-      def team_member?(team_id, user, options = {})
-        boolean_from_response :get, "teams/#{team_id}/members/#{user}", options
+      def team_member?(org, team_slug, user, options = {})
+        boolean_from_response :get, "#{Team.path(org, team_slug)}/members/#{user}", options
       end
 
       # List pending team invitations
       #
       # Requires authenticated organization member.
       #
-      # @param team_id [Integer] Team id.
+      # @param org [String, Integer] Organization GitHub login or id.
+      # @param team_slug [String] Team slug.
       # @return [Array<Sawyer::Resource>] Array of hashes representing invitations.
-      # @see https://developer.github.com/v3/orgs/teams/#list-pending-team-invitations
+      # @see https://docs.github.com/en/rest/teams/members#list-pending-team-invitations
       #
       # @example
-      #   @client.team_invitations('github')
-      def team_invitations(team_id, options = {})
-        get "teams/#{team_id}/invitations", options
+      #   @client.team_invitations("github", "justice-league")
+      def team_invitations(org, team_slug, options = {})
+        get "#{Team.path(org, team_slug)}/invitations", options
       end
 
       # List team repositories
       #
       # Requires authenticated organization member.
       #
-      # @param team_id [Integer] Team id.
+      # @param org [String, Integer] Organization GitHub login or id.
+      # @param team_slug [String] Team slug.
       # @return [Array<Sawyer::Resource>] Array of hashes representing repositories.
-      # @see https://developer.github.com/v3/orgs/teams/#list-team-repos
+      # @see https://docs.github.com/en/rest/teams/teams#list-team-repositories
       # @example
-      #   @client.team_repositories(100000)
+      #   @client.team_repositories("github", "justice-league")
       # @example
-      #   @client.team_repos(100000)
-      def team_repositories(team_id, options = {})
-        paginate "teams/#{team_id}/repos", options
+      #   @client.team_repos("github", "justice-league")
+      def team_repositories(org, team_slug, options = {})
+        paginate "#{Team.path(org, team_slug)}/repos", options
       end
       alias team_repos team_repositories
 
       # Check if a repo is managed by a specific team
       #
-      # @param team_id [Integer] Team ID.
+      # @param org [String, Integer] Organization GitHub login or id.
+      # @param team_slug [String] Team slug.
       # @param repo [String, Hash, Repository] A GitHub repository.
       # @return [Boolean] True if managed by a team. False if not managed by
       #   the team OR the requesting user does not have authorization to access
       #   the team information.
-      # @see https://developer.github.com/v3/orgs/teams/#check-if-a-team-manages-a-repository
+      # @see https://docs.github.com/en/rest/teams/teams#check-team-permissions-for-a-repository
       # @example
-      #   @client.team_repository?(8675309, 'octokit/octokit.rb')
+      #   @client.team_repository?("github", "justice-league", "octokit/octokit.rb")
       # @example
-      #   @client.team_repo?(8675309, 'octokit/octokit.rb')
-      def team_repository?(team_id, repo, _options = {})
-        boolean_from_response :get, "teams/#{team_id}/repos/#{Repository.new(repo)}"
+      #   @client.team_repo?("github", "justice-league", "octokit/octokit.rb")
+      def team_repository?(org, team_slug, repo, _options = {})
+        boolean_from_response :get, "#{Team.path(org, team_slug)}/repos/#{Repository.new(repo)}"
       end
       alias team_repo? team_repository?
 
@@ -549,9 +548,10 @@ module Octokit
       #
       # Requires authenticated user to be an owner of the organization that the
       # team is associated with. Also, the repo must be owned by the
-      # organization, or a direct form of a repo owned by the organization.
+      # organization, or a direct fork of a repo owned by the organization.
       #
-      # @param team_id [Integer] Team id.
+      # @param org [String, Integer] Organization GitHub login or id.
+      # @param team_slug [String] Team slug.
       # @param repo [String, Hash, Repository] A GitHub repository.
       # @option options [String] :permission The permission to grant the team.
       #   Only valid on organization-owned repositories.
@@ -560,15 +560,15 @@ module Octokit
       #   used to determine what permission to grant the team on this repository.
       # @return [Boolean] True if successful, false otherwise.
       # @see Octokit::Repository
-      # @see https://developer.github.com/v3/orgs/teams/#add-or-update-team-repository
+      # @see https://docs.github.com/en/rest/teams/teams#add-or-update-team-repository-permissions
       # @example
-      #   @client.add_team_repository(100000, 'github/developer.github.com')
+      #   @client.add_team_repository("github", "justice-league", "github/developer.github.com")
       # @example
-      #   @client.add_team_repo(100000, 'github/developer.github.com')
+      #   @client.add_team_repo("github", "justice-league", "github/developer.github.com")
       # @example Add a team with admin permissions
-      #   @client.add_team_repository(100000, 'github/developer.github.com', permission: 'admin')
-      def add_team_repository(team_id, repo, options = {})
-        boolean_from_response :put, "teams/#{team_id}/repos/#{Repository.new(repo)}", options
+      #   @client.add_team_repository("github", "justice-league", "github/developer.github.com", permission: "admin")
+      def add_team_repository(org, team_slug, repo, options = {})
+        boolean_from_response :put, "#{Team.path(org, team_slug)}/repos/#{Repository.new(repo)}", options
       end
       alias add_team_repo add_team_repository
 
@@ -578,17 +578,18 @@ module Octokit
       #
       # Requires authenticated organization owner.
       #
-      # @param team_id [Integer] Team id.
+      # @param org [String, Integer] Organization GitHub login or id.
+      # @param team_slug [String] Team slug.
       # @param repo [String, Hash, Repository] A GitHub repository.
       # @return [Boolean] Return true if repo removed from team, false otherwise.
       # @see Octokit::Repository
-      # @see https://developer.github.com/v3/orgs/teams/#remove-team-repository
+      # @see https://docs.github.com/en/rest/teams/teams#remove-a-repository-from-a-team
       # @example
-      #   @client.remove_team_repository(100000, 'github/developer.github.com')
+      #   @client.remove_team_repository("github", "justice-league", "github/developer.github.com")
       # @example
-      #   @client.remove_team_repo(100000, 'github/developer.github.com')
-      def remove_team_repository(team_id, repo, _options = {})
-        boolean_from_response :delete, "teams/#{team_id}/repos/#{Repository.new(repo)}"
+      #   @client.remove_team_repo("github", "justice-league", "github/developer.github.com")
+      def remove_team_repository(org, team_slug, repo, _options = {})
+        boolean_from_response :delete, "#{Team.path(org, team_slug)}/repos/#{Repository.new(repo)}"
       end
       alias remove_team_repo remove_team_repository
 
@@ -652,44 +653,47 @@ module Octokit
 
       # Check if a user has a team membership.
       #
-      # @param team_id [Integer] Team id.
+      # @param org [String, Integer] Organization GitHub login or id.
+      # @param team_slug [String] Team slug.
       # @param user [String] GitHub username of the user to check.
       #
       # @return [Sawyer::Resource] Hash of team membership info
       #
-      # @see https://developer.github.com/v3/orgs/teams/#get-team-membership
+      # @see https://docs.github.com/en/rest/teams/members#get-team-membership-for-a-user
       #
       # @example Check if a user has a membership for a team
-      #   @client.team_membership(1234, 'pengwynn')
-      def team_membership(team_id, user, options = {})
-        get "teams/#{team_id}/memberships/#{user}", options
+      #   @client.team_membership("github", "justice-league", "pengwynn")
+      def team_membership(org, team_slug, user, options = {})
+        get "#{Team.path(org, team_slug)}/memberships/#{user}", options
       end
 
       # Add or invite a user to a team
       #
-      # @param team_id [Integer] Team id.
+      # @param org [String, Integer] Organization GitHub login or id.
+      # @param team_slug [String] Team slug.
       # @param user [String] GitHub username of the user to invite.
       #
       # @return [Sawyer::Resource] Hash of team membership info
       #
-      # @see https://developer.github.com/v3/orgs/teams/#add-or-update-team-membership
+      # @see https://docs.github.com/en/rest/teams/members#add-or-update-team-membership-for-a-user
       #
       # @example Check if a user has a membership for a team
-      #   @client.add_team_membership(1234, 'pengwynn')
-      def add_team_membership(team_id, user, options = {})
-        put "teams/#{team_id}/memberships/#{user}", options
+      #   @client.add_team_membership("github", "justice-league", "pengwynn")
+      def add_team_membership(org, team_slug, user, options = {})
+        put "#{Team.path(org, team_slug)}/memberships/#{user}", options
       end
 
       # Remove team membership
       #
-      # @param team_id [Integer] Team id.
+      # @param org [String, Integer] Organization GitHub login or id.
+      # @param team_slug [String] Team slug.
       # @param user [String] GitHub username of the user to boot.
       # @return [Boolean] True if user removed, false otherwise.
-      # @see https://developer.github.com/v3/orgs/teams/#remove-team-membership
+      # @see https://docs.github.com/en/rest/teams/members#remove-team-membership-for-a-user
       # @example
-      #   @client.remove_team_membership(100000, 'pengwynn')
-      def remove_team_membership(team_id, user, options = {})
-        boolean_from_response :delete, "teams/#{team_id}/memberships/#{user}", options
+      #   @client.remove_team_membership("github", "justice-league", "pengwynn")
+      def remove_team_membership(org, team_slug, user, options = {})
+        boolean_from_response :delete, "#{Team.path(org, team_slug)}/memberships/#{user}", options
       end
 
       # List all organizations memberships for the authenticated user
