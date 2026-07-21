@@ -376,7 +376,7 @@ module Octokit
       # @example
       #   # Get the full repository object including the permissions level and role for the team
       #   @client.team_permissions_for_repo("github", "justice-league", "octocat", "hello-world", :accept => 'application/vnd.github.v3.repository+json')
-      # @see https://docs.github.com/en/rest/teams/teams?apiVersion=2026-03-10#check-team-permissions-for-a-repository
+      # @see https://docs.github.com/en/rest/teams/teams#check-team-permissions-for-a-repository
       def team_permissions_for_repo(org, team, owner, repo, options = {})
         get "#{Team.path(org, team)}/repos/#{owner}/#{repo}", options
       end
@@ -610,7 +610,7 @@ module Octokit
       # @return [Boolean] True if managed by a team. False if not managed by
       #   the team OR the requesting user does not have authorization to access
       #   the team information.
-      # @see https://docs.github.com/en/rest/teams/teams?apiVersion=2026-03-10#check-team-permissions-for-a-repository
+      # @see https://docs.github.com/en/rest/teams/teams#check-team-permissions-for-a-repository
       # @example
       #   @client.team_repository?(8675309, 'octokit/octokit.rb')
       # @example
@@ -642,7 +642,7 @@ module Octokit
       #   team's <tt>permission</tt> attribute will be used.
       # @return [Boolean] True if successful, false otherwise.
       # @see Octokit::Repository
-      # @see https://docs.github.com/en/rest/teams/teams?apiVersion=2026-03-10#add-or-update-team-repository-permissions
+      # @see https://docs.github.com/en/rest/teams/teams#add-or-update-team-repository-permissions
       # @example
       #   @client.add_team_repository(100000, 'github/developer.github.com')
       # @example
@@ -671,7 +671,7 @@ module Octokit
       # @param repo [String, Hash, Repository] A GitHub repository.
       # @return [Boolean] Return true if repo removed from team, false otherwise.
       # @see Octokit::Repository
-      # @see https://docs.github.com/en/rest/teams/teams?apiVersion=2026-03-10#remove-a-repository-from-a-team
+      # @see https://docs.github.com/en/rest/teams/teams#remove-a-repository-from-a-team
       # @example
       #   @client.remove_team_repository(100000, 'github/developer.github.com')
       # @example
