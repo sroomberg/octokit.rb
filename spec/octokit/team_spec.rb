@@ -12,7 +12,7 @@ describe Octokit::Team do
     context 'with org id and team id' do
       it 'returns id api path' do
         path = Octokit::Team.path 3_430_433, 123_456
-        expect(path).to eq 'organizations/3430433/teams/123456'
+        expect(path).to eq 'organizations/3430433/team/123456'
       end
     end
   end

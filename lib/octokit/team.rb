@@ -8,8 +8,21 @@ module Octokit
     # @param org [String, Integer] GitHub organization login or id
     # @param team [String, Integer] Team slug or id
     # @return [String] Team Api path
+    # @example Name-based path
+    #   Octokit::Team.path('github', 'justice-league')
+    #   # => "orgs/github/teams/justice-league"
+    # @example ID-based path
+    #   Octokit::Team.path(3430433, 123456)
+    #   # => "organizations/3430433/team/123456"
     def self.path(org, team)
-      "#{Organization.path(org)}/teams/#{team}"
+      case org
+      when String
+        "orgs/#{org}/teams/#{team}"
+      when Integer
+        "organizations/#{org}/team/#{team}"
+      else
+        raise ArgumentError, "Organization must be a String (login) or Integer (id)"
+      end
     end
   end
 end

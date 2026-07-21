@@ -538,24 +538,26 @@ construction currently used throughout the client.
 
 ### Teams API org and team names
 
-Team methods that previously took a `team_id` now take an organization login and
-team slug, matching GitHub's [`/orgs/{org}/teams/{team_slug}`](https://docs.github.com/en/rest/teams/teams)
-endpoints:
+Team methods now also accept organization and team identifiers for GitHub's
+[`/orgs/{org}/teams/{team_slug}`](https://docs.github.com/en/rest/teams/teams)
+endpoints. Existing calls that pass a team id continue to work, and you can
+address a team by org id and team id as well:
 
 ```ruby
-# Before
+# By team id (existing)
 client.team(123456)
 client.update_team(123456, name: "New name")
-client.add_team_membership(123456, "pengwynn")
 
-# After
+# By org id and team id
+client.team(3430433, 123456)
+
+# By org name and team slug
 client.team("github", "justice-league")
 client.update_team("github", "justice-league", name: "New name")
 client.add_team_membership("github", "justice-league", "pengwynn")
 ```
 
-`#team_by_name` remains as an alias of `#team`.
-
+`#team_by_name` remains available for the name-based form.
 ### Management Console API Removal
 
 [In GHES 3.15, the management console API was removed](https://docs.github.com/en/enterprise-server@3.15/admin/release-notes#3.15.0-retired). If you have any tooling that is using this API, you should transition to using the [Manage GHES API](#interacting-with-the-ghes-manage-api) instead.
