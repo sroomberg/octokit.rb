@@ -120,6 +120,26 @@ describe Octokit::Client::Organizations do
     end
   end # .organization_teams
 
+  describe '.team' do
+    it 'returns a team by team id' do
+      request = stub_get(github_url('/teams/123456'))
+      @client.team(123_456)
+      assert_requested request
+    end
+
+    it 'returns a team by org id and team id' do
+      request = stub_get(github_url('/organizations/1/team/2'))
+      @client.team(1, 2)
+      assert_requested request
+    end
+
+    it 'returns a team by org name and team slug' do
+      request = stub_get(github_url('/orgs/github/teams/justice-league'))
+      @client.team('github', 'justice-league')
+      assert_requested request
+    end
+  end # .team
+
   describe '.child_teams', :vcr do
     it 'returns all child teams for the team' do
       child_teams = @client.child_teams(test_github_org, test_github_team_slug)
