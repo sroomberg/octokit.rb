@@ -161,6 +161,29 @@ describe Octokit::Client::Organizations do
     end
   end # .add_team_repository
 
+  describe '.team_members' do
+    it 'lists members with the org name and team slug path' do
+      request = stub_get(github_url('/orgs/github/teams/justice-league/members'))
+      @client.team_members('github', 'justice-league')
+      assert_requested request
+    end
+
+    it 'filters members by role' do
+      request = stub_get(github_url('/orgs/github/teams/justice-league/members?role=maintainer'))
+      @client.team_members('github', 'justice-league', role: 'maintainer')
+      assert_requested request
+    end
+  end # .team_members
+
+  describe '.add_team_membership' do
+    it 'assigns a maintainer role' do
+      request = stub_put(github_url('/orgs/github/teams/justice-league/memberships/pengwynn'))
+                  .with(body: { role: 'maintainer' })
+      @client.add_team_membership('github', 'justice-league', 'pengwynn', role: 'maintainer')
+      assert_requested request
+    end
+  end # .add_team_membership
+
   describe '.child_teams', :vcr do
     it 'returns all child teams for the team' do
       child_teams = @client.child_teams(test_github_org, test_github_team_slug)

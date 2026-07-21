@@ -556,11 +556,18 @@ client.team("github", "justice-league")
 client.update_team("github", "justice-league", name: "New name")
 client.add_team_membership("github", "justice-league", "pengwynn")
 client.add_team_repository("github", "justice-league", "github/repo", permission: "maintain")
+
+# List team members (including child teams), optionally filtered by role
+client.team_members("github", "justice-league")
+client.team_members("github", "justice-league", role: "maintainer")
 ```
 
+This addresses the modern Teams member routes discussed in
+[octokit/octokit.rb#1294](https://github.com/octokit/octokit.rb/issues/1294).
 `#team_by_name` remains available for the name-based form. Team repository
 permissions accept `pull`, `triage`, `push`, `maintain`, `admin`, or a custom
-repository role name.
+repository role name. Prefer `#add_team_membership` / `#remove_team_membership`
+/ `#team_membership` over the legacy `#add_team_member` family.
 ### Management Console API Removal
 
 [In GHES 3.15, the management console API was removed](https://docs.github.com/en/enterprise-server@3.15/admin/release-notes#3.15.0-retired). If you have any tooling that is using this API, you should transition to using the [Manage GHES API](#interacting-with-the-ghes-manage-api) instead.

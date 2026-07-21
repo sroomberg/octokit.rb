@@ -456,28 +456,42 @@ module Octokit
 
       # List team members
       #
-      # Requires authenticated organization member.
+      # Requires authenticated organization member. Team members include members
+      # of child teams. Prefer the organization + team slug form, which maps to
+      # <tt>GET /orgs/{org}/teams/{team_slug}/members</tt>.
       #
       # @overload team_members(team_id, options = {})
       #   @param team_id [Integer] Team id.
       # @overload team_members(org, team, options = {})
       #   @param org [String, Integer] Organization GitHub login or id.
       #   @param team [String, Integer] Team slug or id.
+      # @option options [String] :role Filters members by role in the team.
+      #   Can be one of: <tt>member</tt>, <tt>maintainer</tt>, or <tt>all</tt>
+      #   (default).
       # @return [Array<Sawyer::Resource>] Array of hashes representing users.
+      #   Each member may include <tt>role</tt> (<tt>member</tt> or
+      #   <tt>maintainer</tt>) and <tt>inherited</tt> (whether membership comes
+      #   from a child team).
       # @see https://docs.github.com/en/rest/teams/members#list-team-members
       # @example
-      #   @client.team_members(100000)
-      # @example
       #   @client.team_members("github", "justice-league")
+      # @example Filter to team maintainers
+      #   @client.team_members("github", "justice-league", role: "maintainer")
+      # @example Legacy team id form
+      #   @client.team_members(100000)
       def team_members(*args)
         path, options = team_path_and_options(args)
         paginate "#{path}/members", options
       end
 
-      # Add team member
+      # Add team member (Legacy)
       #
       # Requires authenticated organization owner or member with team
       # `admin` permission.
+      #
+      # @deprecated Use {#add_team_membership} with an organization and team slug
+      #   instead. The legacy team member endpoints are closing down; see
+      #   https://docs.github.com/en/rest/teams/members#add-or-update-team-membership-for-a-user
       #
       # @overload add_team_member(team_id, user, options = {})
       #   @param team_id [Integer] Team id.
@@ -486,11 +500,11 @@ module Octokit
       #   @param team [String, Integer] Team slug or id.
       # @param user [String] GitHub username of new team member.
       # @return [Boolean] True on successful addition, false otherwise.
-      # @see https://docs.github.com/en/rest/teams/members#add-or-update-team-membership-for-a-user
+      # @see https://docs.github.com/en/rest/teams/members#add-team-member-legacy
       # @example
       #   @client.add_team_member(100000, 'pengwynn')
-      # @example
-      #   @client.add_team_member("github", "justice-league", "pengwynn")
+      # @example Preferred modern API
+      #   @client.add_team_membership("github", "justice-league", "pengwynn")
       #
       # @example
       #   # Opt-in to future behavior for this endpoint. Adds the member to the
@@ -502,6 +516,7 @@ module Octokit
       #     :accept => "application/vnd.github.the-wasp-preview+json"
       # @see https://developer.github.com/changes/2014-08-05-team-memberships-api/
       def add_team_member(*args)
+        octokit_warn 'Deprecated: #add_team_member uses a legacy Teams API path. Prefer #add_team_membership with an organization and team slug.'
         path, user, options = team_path_user_and_options(args)
         # There's a bug in this API call. The docs say to leave the body blank,
         # but it fails if the body is both blank and the content-length header
@@ -509,10 +524,13 @@ module Octokit
         boolean_from_response :put, "#{path}/members/#{user}", options.merge({ name: user })
       end
 
-      # Remove team member
+      # Remove team member (Legacy)
       #
       # Requires authenticated organization owner or member with team
       # `admin` permission.
+      #
+      # @deprecated Use {#remove_team_membership} with an organization and team slug
+      #   instead. The legacy team member endpoints are closing down.
       #
       # @overload remove_team_member(team_id, user, options = {})
       #   @param team_id [Integer] Team id.
@@ -521,20 +539,24 @@ module Octokit
       #   @param team [String, Integer] Team slug or id.
       # @param user [String] GitHub username of the user to boot.
       # @return [Boolean] True if user removed, false otherwise.
-      # @see https://docs.github.com/en/rest/teams/members#remove-team-membership-for-a-user
+      # @see https://docs.github.com/en/rest/teams/members#remove-team-member-legacy
       # @example
       #   @client.remove_team_member(100000, 'pengwynn')
-      # @example
-      #   @client.remove_team_member("github", "justice-league", "pengwynn")
+      # @example Preferred modern API
+      #   @client.remove_team_membership("github", "justice-league", "pengwynn")
       def remove_team_member(*args)
+        octokit_warn 'Deprecated: #remove_team_member uses a legacy Teams API path. Prefer #remove_team_membership with an organization and team slug.'
         path, user, options = team_path_user_and_options(args)
         boolean_from_response :delete, "#{path}/members/#{user}", options
       end
 
-      # Check if a user is a member of a team.
+      # Check if a user is a member of a team (Legacy)
       #
       # Use this to check if another user is a member of a team that
       # you are a member.
+      #
+      # @deprecated Use {#team_membership} with an organization and team slug
+      #   instead. The legacy get team member endpoint is closing down.
       #
       # @overload team_member?(team_id, user, options = {})
       #   @param team_id [Integer] Team id.
@@ -545,14 +567,15 @@ module Octokit
       #
       # @return [Boolean] Is a member?
       #
-      # @see https://docs.github.com/en/rest/teams/members#get-team-membership-for-a-user
+      # @see https://docs.github.com/en/rest/teams/members#get-team-member-legacy
       #
       # @example Check if a user is in your team
       #   @client.team_member?(100000, 'pengwynn')
       #   => false
-      # @example
-      #   @client.team_member?("github", "justice-league", "pengwynn")
+      # @example Preferred modern API
+      #   @client.team_membership("github", "justice-league", "pengwynn")
       def team_member?(*args)
+        octokit_warn 'Deprecated: #team_member? uses a legacy Teams API path. Prefer #team_membership with an organization and team slug.'
         path, user, options = team_path_user_and_options(args)
         boolean_from_response :get, "#{path}/members/#{user}", options
       end
@@ -764,21 +787,27 @@ module Octokit
 
       # Add or invite a user to a team
       #
+      # Prefer the organization + team slug form, which maps to
+      # <tt>PUT /orgs/{org}/teams/{team_slug}/memberships/{username}</tt>.
+      #
       # @overload add_team_membership(team_id, user, options = {})
       #   @param team_id [Integer] Team id.
       # @overload add_team_membership(org, team, user, options = {})
       #   @param org [String, Integer] Organization GitHub login or id.
       #   @param team [String, Integer] Team slug or id.
       # @param user [String] GitHub username of the user to invite.
+      # @option options [String] :role The role that this user should have in the
+      #   team. Can be one of: <tt>member</tt> or <tt>maintainer</tt>.
+      #   Default: <tt>member</tt>.
       #
       # @return [Sawyer::Resource] Hash of team membership info
       #
       # @see https://docs.github.com/en/rest/teams/members#add-or-update-team-membership-for-a-user
       #
       # @example
-      #   @client.add_team_membership(1234, 'pengwynn')
-      # @example
       #   @client.add_team_membership("github", "justice-league", "pengwynn")
+      # @example Assign the maintainer role
+      #   @client.add_team_membership("github", "justice-league", "pengwynn", role: "maintainer")
       def add_team_membership(*args)
         path, user, options = team_path_user_and_options(args)
         put "#{path}/memberships/#{user}", options
