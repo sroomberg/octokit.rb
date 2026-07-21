@@ -140,6 +140,27 @@ describe Octokit::Client::Organizations do
     end
   end # .team
 
+  describe '.add_team_repository' do
+    it 'uses org name and team slug path' do
+      request = stub_put(github_url('/orgs/github/teams/justice-league/repos/github/developer.github.com'))
+      @client.add_team_repository('github', 'justice-league', 'github/developer.github.com')
+      assert_requested request
+    end
+
+    it 'uses org id and team id path' do
+      request = stub_put(github_url('/organizations/1/team/2/repos/github/developer.github.com'))
+      @client.add_team_repository(1, 2, 'github/developer.github.com')
+      assert_requested request
+    end
+
+    it 'sends permission in the request body' do
+      request = stub_put(github_url('/orgs/github/teams/justice-league/repos/github/developer.github.com'))
+                 .with(body: { permission: 'maintain' })
+      @client.add_team_repository('github', 'justice-league', 'github/developer.github.com', permission: 'maintain')
+      assert_requested request
+    end
+  end # .add_team_repository
+
   describe '.child_teams', :vcr do
     it 'returns all child teams for the team' do
       child_teams = @client.child_teams(test_github_org, test_github_team_slug)
